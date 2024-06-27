@@ -1,79 +1,28 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib.patches import Arc
 
 
 def naming(columnId: str, columnName: str, targetTable):
-    print(targetTable.loc[columnId][columnName])
+    return targetTable.loc[columnId][columnName]
 
-def totalPointsOfTeams(leagueID):
-    teamstats_data = pd.read_csv('data\\teamstats.csv').replace({'result':{'W':3,'L':0, 'D':1}})
+
+# calculate sum of numeric values such goals/ xGoals for selected league for each season
+def totalStatsOfLeaguesBySeason(leagueID, statsName: str):
+    teamstats_data = pd.read_csv('data\\teamstats.csv')
+    teamstats_data['result'] = teamstats_data['result'].map({'W': 3, 'L': 0, 'D': 1})
     games_data = pd.read_csv('data\\games.csv')
     leaguesId = games_data[['gameID', 'leagueID']]
-    # Concatenating for having League Id for every team game
-    mergedDf = teamstats_data.merge(leaguesId, how='inner', on='gameID')
-    totalPoints = mergedDf['result'].sum()
-    print(totalPoints)
+    # Concatenating for having League Id for every team game - group by season
+    merged = teamstats_data.merge(leaguesId, how='inner', on='gameID')
+    teamsOfLeague = merged[(merged['leagueID'] == leagueID)]
+    total = []
+    for season in [2014, 2015, 2016, 2017, 2018, 2019, 2020]:
+        teams = teamsOfLeague[teamsOfLeague['season'] == season]
+        total.append(teams[statsName].sum())
+    return total
 
 
-
-
-
-# source: https://fcpython.com/visualisation/drawing-pitchmap-adding-lines-circles-matplotlib
-def createPitch():
-    # Create figure
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
-
-    # Pitch Outline & Centre Line
-    plt.plot([0, 0], [0, 90], color="black")
-    plt.plot([0, 130], [90, 90], color="black")
-    plt.plot([130, 130], [90, 0], color="black")
-    plt.plot([130, 0], [0, 0], color="black")
-    plt.plot([65, 65], [0, 90], color="black")
-
-    # Left Penalty Area
-    plt.plot([16.5, 16.5], [65, 25], color="black")
-    plt.plot([0, 16.5], [65, 65], color="black")
-    plt.plot([16.5, 0], [25, 25], color="black")
-
-    # Right Penalty Area
-    plt.plot([130, 113.5], [65, 65], color="black")
-    plt.plot([113.5, 113.5], [65, 25], color="black")
-    plt.plot([113.5, 130], [25, 25], color="black")
-
-    # Left 6-yard Box
-    plt.plot([0, 5.5], [54, 54], color="black")
-    plt.plot([5.5, 5.5], [54, 36], color="black")
-    plt.plot([5.5, 0.5], [36, 36], color="black")
-
-    # Right 6-yard Box
-    plt.plot([130, 124.5], [54, 54], color="black")
-    plt.plot([124.5, 124.5], [54, 36], color="black")
-    plt.plot([124.5, 130], [36, 36], color="black")
-
-    # Prepare Circles
-    centreCircle = plt.Circle((65, 45), 9.15, color="black", fill=False)
-    centreSpot = plt.Circle((65, 45), 0.8, color="black")
-    leftPenSpot = plt.Circle((11, 45), 0.8, color="black")
-    rightPenSpot = plt.Circle((119, 45), 0.8, color="black")
-
-    # Draw Circles
-    ax.add_patch(centreCircle)
-    ax.add_patch(centreSpot)
-    ax.add_patch(leftPenSpot)
-    ax.add_patch(rightPenSpot)
-
-    # Prepare Arcs
-    leftArc = Arc((11, 45), height=18.3, width=18.3, angle=0, theta1=310, theta2=50, color="black")
-    rightArc = Arc((119, 45), height=18.3, width=18.3, angle=0, theta1=130, theta2=230, color="black")
-
-    # Draw Arcs
-    ax.add_patch(leftArc)
-    ax.add_patch(rightArc)
-
-    # Tidy Axes
-    # plt.axis('off')
-
-    # Display Pitch
-    plt.show()
+def gameIDOfEachseason(season):
+    teamstats_data = pd.read_csv('data\\teamstats.csv')
+    specificSeason = (teamstats_data['season'] == season)
+    gamesIdOfSeason = teamstats_data[specificSeason]['gameID']
+    return gamesIdOfSeason
